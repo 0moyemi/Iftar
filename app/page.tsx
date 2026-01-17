@@ -1,6 +1,54 @@
-import Image from "next/image";
+"use client"
+import { useState } from "react";
 
 export default function Home() {
+  const [customAmount, setCustomAmount] = useState("");
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [receipt, setReceipt] = useState<string | null>(null);
+
+  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY;
+
+  const handlePaystack = (amount: number) => {
+    // Validate public key
+    if (!paystackPublicKey) {
+      alert("Payment configuration error. Please contact the administrator.");
+      console.error("Paystack public key is not configured");
+      return;
+    }
+
+    // Validate amount
+    if (!amount || amount <= 0) {
+      alert("Please enter a valid amount");
+      return;
+    }
+
+    const handler = (window as any).PaystackPop.setup({
+      key: paystackPublicKey,
+      email: "donor@adenikemosque.org",
+      amount: amount * 100, // NGN to kobo conversion
+      currency: "NGN",
+      ref: `adenike-iftar-${Date.now()}`,
+      onClose: () => {
+        console.log("Payment window closed");
+      },
+      callback: (response: any) => {
+        // Payment successful
+        setReceipt(`Donation successful!🎉 
+          May Allah accept your charity and multiply it.\n\nReference: ${response.reference}\nAmount: ₦${amount.toLocaleString()}`);
+        setCustomAmount("");
+        setShowCustomInput(false);
+      },
+    });
+
+    handler.openIframe();
+  };
+
+  const donationOptions = [
+    { amount: 500, label: "Feed 1 soul → ₦500" },
+    { amount: 2500, label: "Feed 5 souls → ₦2,500" },
+    { amount: 100000, label: "Sponsor an entire day → ₦100,000" },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 sm:px-4 lg:px-8">
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-4 sm:p-6">
@@ -25,6 +73,15 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Receipt Display */}
+        {receipt && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <p className="text-green-800 text-center text-sm sm:text-base whitespace-pre-line">
+              {receipt}
+            </p>
+          </div>
+        )}
+
         {/* Instruction */}
         <p className="text-base text-gray-500 text-center mb-3">
           Choose an option below to donate instantly:
@@ -32,28 +89,44 @@ export default function Home() {
 
         {/* Donation Buttons */}
         <div className="space-y-4 mb-10">
-          <button className="w-full bg-[#1D4ED8] hover:bg-[#1e40af] active:bg-[#1e3a8a] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-150 active:scale-[0.98]">
-            Feed 1 soul → ₦500
-          </button>
+          {donationOptions.map(({ amount, label }) => (
+            <button
+              key={amount}
+              onClick={() => handlePaystack(amount)}
+              className="w-full bg-[#1D4ED8] hover:bg-[#1e40af] active:bg-[#1e3a8a] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-150 active:scale-[0.98]"
+            >
+              {label}
+            </button>
+          ))}
 
-          <button className="w-full bg-[#1D4ED8] hover:bg-[#1e40af] active:bg-[#1e3a8a] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-150 active:scale-[0.98]">
-            Feed 5 souls → ₦2,500
-          </button>
-
-          <button className="w-full bg-[#1D4ED8] hover:bg-[#1e40af] active:bg-[#1e3a8a] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-150 active:scale-[0.98]">
-            Sponsor an entire day → ₦100,000
-          </button>
-          <button className="w-full bg-white border-2 border-[#1D4ED8] text-[#1D4ED8] hover:bg-blue-50 active:bg-[#1D4ED8] active:text-white font-semibold py-3 px-4 rounded-lg transition-all duration-150 active:scale-[0.98]">
+          {/* Custom Amount Button */}
+          <button
+            onClick={() => setShowCustomInput(!showCustomInput)}
+            className="w-full bg-white border-2 border-[#1D4ED8] text-[#1D4ED8] hover:bg-blue-50 active:bg-[#1D4ED8] active:text-white font-semibold py-3 px-4 rounded-lg transition-all duration-150 active:scale-[0.98]"
+          >
             Donate any amount
           </button>
-        </div>
 
-        {/* Post-donation notification placeholder
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
-          <p className="text-green-800 text-center text-sm sm:text-base">
-            Notification after donation: "May Allah accept your charity and multiply it."
-          </p>
-        </div> */}
+          {/* Custom Amount Input */}
+          {showCustomInput && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+              <input
+                type="number"
+                placeholder="Enter any amount (₦)"
+                value={customAmount}
+                onChange={(e) => setCustomAmount(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-transparent"
+                min="1"
+              />
+              <button
+                onClick={() => handlePaystack(Number(customAmount))}
+                className="w-full bg-[#1D4ED8] hover:bg-[#1e40af] active:bg-[#1e3a8a] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-150 active:scale-[0.98]"
+              >
+                Proceed to Payment
+              </button>
+            </div>
+          )}
+        </div>
 
 
         {/* WhatsApp group button */}
