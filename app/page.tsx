@@ -88,7 +88,7 @@ export default function Home() {
         </p>
 
         {/* Donation Buttons */}
-        <div className="space-y-4 mb-10">
+        <div className="space-y-4 mb-3">
           {donationOptions.map(({ amount, label }) => (
             <button
               key={amount}
@@ -130,7 +130,7 @@ export default function Home() {
 
 
         {/* WhatsApp group button */}
-        <div className="text-center mb-6">
+        {/* <div className="text-center mb-6">
           <a
             href="#"
             className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20BA5A] active:bg-[#1DA851] text-white text-sm font-medium py-2 px-4 rounded-lg transition-all duration-150 active:scale-[0.98]"
@@ -140,7 +140,7 @@ export default function Home() {
             </svg>
             Join our WhatsApp group
           </a>
-        </div>
+        </div> */}
 
       </div>
 
@@ -151,6 +151,7 @@ export default function Home() {
           <p className="text-xs text-gray-600">Imam Adenike,</p>
           <p className="text-xs text-gray-600">Adenike Community Mosque,</p>
           <p className="text-xs text-gray-600">Adenike Lautech, Ogbomoso, Oyo state.</p>
+          <p className="text-xs text-gray-600">Whatsapp: <strong>09040991849</strong></p>
         </div>
       </footer>
     </div>
